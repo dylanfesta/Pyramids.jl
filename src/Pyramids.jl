@@ -50,11 +50,10 @@ struct ImagePyramid
         scale = scale
         num_orientations = num_orientations
 
-        im_dims = size(im)
-        h = im_dims[1]
-        w = im_dims[2]
+        h,w = size(im) # image dimensions
 
-        num_levels = min(ceil.(log2(minimum([h w]))/log2(1/scale) - (log2(min_size)/log2(1/scale))),max_levels);
+        num_levels = min(ceil.(
+               log2(min(h,w)) / log2(1/scale) - (log2(min_size)/log2(1/scale))),max_levels);
 
         pyramid_bands, mtx, harmonics = build_complex_steerable_pyramid(im,
             num_levels, num_levels, order=num_orientations-1,
@@ -63,12 +62,11 @@ struct ImagePyramid
         return new(scale,num_levels,num_orientations,t,pyramid_bands)
     end
 
-    function ImagePyramid(im::Array, t::GaussianPyramid; min_size=15, max_levels=23, filter=[0.0625; 0.25; 0.375; 0.25; 0.0625])
-        this = new()
+    function ImagePyramid(im::Array, t::GaussianPyramid; min_size=15, max_levels=23,
+         filter=[0.0625; 0.25; 0.375; 0.25; 0.0625])
 
         pyramid_bands, num_levels = generate_gaussian_pyramid(im,
                 min_size=min_size, max_levels=max_levels, filter=filter)
-
         scale = 0.5
         pyramid_bands = pyramid_bands
         num_orientations = 1
@@ -77,7 +75,8 @@ struct ImagePyramid
         return new(scale,num_levels,num_orientations,t,pyramid_bands)
     end
 
-    function ImagePyramid(im::Array, t::LaplacianPyramid; min_size=15, max_levels=23, filter=[0.0625; 0.25; 0.375; 0.25; 0.0625])
+    function ImagePyramid(im::Array, t::LaplacianPyramid; min_size=15, max_levels=23,
+         filter=[0.0625; 0.25; 0.375; 0.25; 0.0625])
 
         pyramid_bands, num_levels = generate_laplacian_pyramid(im,
                 min_size=min_size, max_levels=max_levels, filter=filter)
@@ -89,10 +88,10 @@ struct ImagePyramid
 
         return new(scale,num_levels,num_orientations,t,pyramid_bands)
     end
-    # I am not sure this is needed
-    # function ImagePyramid(pyramid_bands::Dict, scale, t, num_levels, num_orientations)
-    #     return new(scale,num_levels,num_orientations,t,pyramid_bands)
-    # end
+    # simplest constructor
+    function ImagePyramid(pyramid_bands::Dict, scale, t, num_levels, num_orientations)
+        return new(scale,num_levels,num_orientations,t,pyramid_bands)
+    end
 end
 
 ##############################
